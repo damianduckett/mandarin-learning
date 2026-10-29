@@ -40,7 +40,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
    : await authClient.signIn.email({ email, password });
   setBusy(false);
   if(result.error) setMessage(result.error.message || "We couldn't sign you in. Please try again.");
-  else onClose();
+  else { onClose(); window.location.reload(); }
  }
  return <div className="modal-backdrop"><section className="auth-modal" role="dialog" aria-modal="true" aria-label={mode === "sign-in" ? "Sign in" : "Create account"}><button className="close" aria-label="Close" onClick={onClose}>×</button><span className="eyebrow">SAVE YOUR MOMENTUM</span><h2>{mode === "sign-in" ? "Welcome back." : "Make your progress yours."}</h2><p>Sync your memory schedule across devices with a free account.</p><form onSubmit={submit}>{mode === "sign-up" && <label>Name<input required value={name} onChange={e=>setName(e.target.value)} autoComplete="name"/></label>}<label>Email<input required type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></label><label>Password<input required minLength={8} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete={mode === "sign-in" ? "current-password" : "new-password"}/></label>{message && <p className="auth-error" role="alert">{message}</p>}<button className="primary" disabled={busy}>{busy ? "One moment…" : mode === "sign-in" ? "Sign in" : "Create account"}<Icon name="arrow" size={17}/></button></form><button className="text-button auth-switch" onClick={()=>{setMode(mode === "sign-in" ? "sign-up" : "sign-in");setMessage("")}}>{mode === "sign-in" ? "New here? Create an account" : "Already have an account? Sign in"}</button></section></div>;
 }
