@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { phrases, topics, type Phrase } from "./phrases";
 import { authClient } from "@/lib/auth-client";
 import { FULLY_LEARNED_STAGE, intervalLabel, reviewCard, type MemoryCard } from "@/lib/spaced-repetition";
@@ -65,10 +65,43 @@ export default function Home() {
  const [showAuth, setShowAuth] = useState(false);
  const [syncedUser, setSyncedUser] = useState("");
  const [nowMs, setNowMs] = useState(0);
+ const progressRef = useRef(progress);
+ useEffect(() => { progressRef.current = progress; }, [progress]);
  useEffect(() => { setCurrentDay(today()); setNowMs(Date.now()); const timer = window.setInterval(()=>setNowMs(Date.now()), 60_000); try { const raw = localStorage.getItem("lingo-progress-v2") || localStorage.getItem("lingo-progress-v1"); if(raw) { const p = JSON.parse(raw); if (typeof p.xp === "number" && Array.isArray(p.known) && Array.isArray(p.missed) && Array.isArray(p.dates) && typeof p.sessions === "number") { const migratedCards = p.cards && typeof p.cards === "object" ? p.cards : Object.fromEntries([...new Set([...p.known, ...p.missed])].map((id:number)=>[id, reviewCard(undefined,id,false)])); setProgress({...p,cards:migratedCards}); } } } catch { setStorageMessage("Progress storage is unavailable. You can still practice this session."); } setReady(true); return ()=>window.clearInterval(timer); }, []);
  useEffect(() => { if(ready) try { localStorage.setItem("lingo-progress-v2", JSON.stringify(progress)); } catch { /* Session still works when storage is blocked. */ } }, [progress, ready]);
  useEffect(() => { const userId = authSession?.user.id; if(!ready || !userId || syncedUser === userId) return; let cancelled = false; fetch("/api/progress").then(async response => { if(!response.ok) throw new Error(); return response.json(); }).then(async data => { if(cancelled) return; if(data.progress) setProgress(data.progress); else await fetch("/api/progress", {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({progress})}); setSyncedUser(userId); setStorageMessage("Progress synced to your account."); }).catch(()=>setStorageMessage("Signed in, but cloud sync is waiting for the Neon database connection.")); return ()=>{cancelled=true}; }, [authSession?.user.id, ready, syncedUser]);
  useEffect(() => { if(!syncedUser) return; const timer = window.setTimeout(()=>fetch("/api/progress",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({progress})}).catch(()=>{}),700); return ()=>window.clearTimeout(timer); }, [progress, syncedUser]);
+ useEffect(() => {
+  if (!syncedUser) return;
+  let cancelled = false;
+  let retryTimer: number | undefined;
+  const save = async (attempt = 0) => {
+   if (cancelled) return;
+   setStorageMessage("Saving your progress…");
+   try {
+    const response = await fetch("/api/progress", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ progress: progressRef.current }), keepalive: true });
+    if (!response.ok) throw new Error("save failed");
+    if (!cancelled) setStorageMessage("Saved to your account.");
+   } catch {
+    if (!cancelled && attempt < 5) {
+     setStorageMessage("Save interrupted — retrying…");
+     retryTimer = window.setTimeout(() => save(attempt + 1), Math.min(12000, 1200 * 2 ** attempt));
+    } else if (!cancelled) setStorageMessage("Your progress is safe locally. We’ll keep trying to sync it.");
+   }
+  };
+  const timer = window.setTimeout(() => save(), 900);
+  const flush = () => { void save(); };
+  const onVisibility = () => { if (document.visibilityState === "hidden") flush(); };
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", onVisibility);
+  return () => { cancelled = true; window.clearTimeout(timer); if (retryTimer) window.clearTimeout(retryTimer); window.removeEventListener("pagehide", flush); document.removeEventListener("visibilitychange", onVisibility); };
+ }, [progress, syncedUser]);
+ useEffect(() => {
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>(".profile, .account-button"));
+  const openProfile = (event: Event) => { if (!authSession) return; event.preventDefault(); event.stopPropagation(); window.location.assign("/profile"); };
+  buttons.forEach(button => button.addEventListener("click", openProfile, true));
+  return () => buttons.forEach(button => button.removeEventListener("click", openProfile, true));
+ }, [authSession]);
  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
  function speak(phrase: Phrase, slow = false) {
   if (!("speechSynthesis" in window)) { setAudioMessage("Speech playback isn't supported in this browser. Try Chrome or Edge with a Mandarin voice installed."); return; }
