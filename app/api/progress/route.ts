@@ -23,7 +23,7 @@ export async function PUT(request: Request) {
   const body = await request.json();
   if (!body?.progress || typeof body.progress !== "object") return Response.json({ error: "Invalid progress" }, { status: 400 });
   const serialized = JSON.stringify(body.progress);
-  if (serialized.length > 200_000) return Response.json({ error: "Progress payload is too large" }, { status: 413 });
+  if (serialized.length > 2_000_000) return Response.json({ error: "Progress payload is too large" }, { status: 413 });
   const sql = getDb();
   await sql`INSERT INTO user_progress (user_id, progress, updated_at)
     VALUES (${userId}, ${serialized}::jsonb, NOW())

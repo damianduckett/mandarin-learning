@@ -1,4 +1,6 @@
-export const topics = ["First words", "Meet & greet", "Everyday essentials", "Food & drink", "Getting around", "Shopping", "Time & plans", "People & feelings", "Help & clarity", "Real conversations"];
+import { extendedLessons } from "./extended-phrases";
+
+export const topics = ["First words", "Meet & greet", "Everyday essentials", "Food & drink", "Getting around", "Shopping", "Time & plans", "People & feelings", "Help & clarity", "Real conversations", ...extendedLessons.map(lesson => lesson.title)];
 const rows = [
  ["你好|Nǐ hǎo|Hello", "谢谢|Xièxie|Thank you", "再见|Zàijiàn|Goodbye", "对不起|Duìbuqǐ|Sorry", "没关系|Méi guānxi|It's okay", "是的|Shì de|Yes", "不是|Bú shì|No / That's not right", "请|Qǐng|Please", "不客气|Bú kèqi|You're welcome", "我不明白|Wǒ bù míngbai|I don't understand"],
  ["你叫什么名字|Nǐ jiào shénme míngzi|What's your name?", "我叫小明|Wǒ jiào Xiǎomíng|My name is Xiaoming", "很高兴认识你|Hěn gāoxìng rènshi nǐ|Nice to meet you", "你好吗|Nǐ hǎo ma|How are you?", "我很好|Wǒ hěn hǎo|I'm very well", "你呢|Nǐ ne|And you?", "你是哪国人|Nǐ shì nǎ guó rén|What country are you from?", "我是英国人|Wǒ shì Yīngguó rén|I'm British", "早上好|Zǎoshang hǎo|Good morning", "晚安|Wǎn'ān|Good night"],
@@ -10,6 +12,7 @@ const rows = [
  ["我很开心|Wǒ hěn kāixīn|I'm happy", "我累了|Wǒ lèi le|I'm tired", "我喜欢你|Wǒ xǐhuan nǐ|I like you", "这是我的朋友|Zhè shì wǒ de péngyou|This is my friend", "太好了|Tài hǎo le|That's great", "别担心|Bié dānxīn|Don't worry", "我想家了|Wǒ xiǎng jiā le|I miss home", "真漂亮|Zhēn piàoliang|So beautiful", "真有意思|Zhēn yǒu yìsi|That's really interesting", "加油|Jiāyóu|You can do it"],
  ["请再说一遍|Qǐng zài shuō yí biàn|Please say that again", "请说慢一点|Qǐng shuō màn yìdiǎn|Please speak more slowly", "你会说英语吗|Nǐ huì shuō Yīngyǔ ma|Can you speak English?", "我在学中文|Wǒ zài xué Zhōngwén|I'm learning Chinese", "这是什么意思|Zhè shì shénme yìsi|What does this mean?", "请帮我一下|Qǐng bāng wǒ yíxià|Please help me", "我需要医生|Wǒ xūyào yīshēng|I need a doctor", "我不舒服|Wǒ bù shūfu|I don't feel well", "小心|Xiǎoxīn|Be careful", "请写下来|Qǐng xiě xiàlai|Please write it down"],
  ["你在做什么|Nǐ zài zuò shénme|What are you doing?", "你喜欢什么|Nǐ xǐhuan shénme|What do you like?", "我也喜欢|Wǒ yě xǐhuan|I like it too", "我觉得很好|Wǒ juéde hěn hǎo|I think it's very good", "真的吗|Zhēn de ma|Really?", "然后呢|Ránhòu ne|And then?", "我同意|Wǒ tóngyì|I agree", "下次再聊|Xià cì zài liáo|Let's chat next time", "祝你玩得开心|Zhù nǐ wán de kāixīn|Have a good time", "很高兴和你聊天|Hěn gāoxìng hé nǐ liáotiān|It was nice talking to you"],
+ ...extendedLessons.map(lesson => lesson.rows),
 ];
 export const phrases = rows.flatMap((group, topic) => group.map((row, index) => { const [hanzi, pinyin, english] = row.split("|"); return { id: topic * 10 + index, topic, hanzi, pinyin, english }; }));
 export type Phrase = typeof phrases[number];
