@@ -103,6 +103,7 @@ export default function Home() {
   return () => buttons.forEach(button => button.removeEventListener("click", openProfile, true));
  }, [authSession]);
  useEffect(() => { const nav = document.querySelector(".sidebar nav"); if (!nav || nav.querySelector(".typed-practice-link")) return; const link = document.createElement("a"); link.href = "/practice"; link.className = "nav-item typed-practice-link"; link.innerHTML = "<span aria-hidden=\"true\">✎</span>Typed practice"; nav.appendChild(link); return () => link.remove(); }, []);
+ useEffect(() => { const nav = document.querySelector(".sidebar nav"); if (!nav || nav.querySelector(".pile-library-link")) return; const link = document.createElement("a"); link.href = "/piles"; link.className = "nav-item pile-library-link"; link.innerHTML = "<span aria-hidden=\"true\">▦</span>Memory piles"; nav.appendChild(link); return () => link.remove(); }, []);
  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
  function speak(phrase: Phrase, slow = false) {
   if (!("speechSynthesis" in window)) { setAudioMessage("Speech playback isn't supported in this browser. Try Chrome or Edge with a Mandarin voice installed."); return; }

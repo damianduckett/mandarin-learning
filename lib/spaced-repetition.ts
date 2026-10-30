@@ -8,6 +8,7 @@ export const REVIEW_INTERVALS = [
   30 * 24 * 60 * 60 * 1000,
   90 * 24 * 60 * 60 * 1000,
   180 * 24 * 60 * 60 * 1000,
+  365 * 24 * 60 * 60 * 1000,
 ] as const;
 
 export const FULLY_LEARNED_STAGE = REVIEW_INTERVALS.length - 1;
@@ -46,5 +47,5 @@ export function isDue(card: MemoryCard, now = new Date()) {
 }
 
 export function intervalLabel(stage: number) {
-  return ["new", "10 min", "1 day", "3 days", "7 days", "14 days", "30 days", "90 days", "180 days"][stage] ?? "180 days";
+  return ["new", "10 min", "1 day", "3 days", "7 days", "14 days", "30 days", "90 days", "180 days", "365 days"][stage] ?? "365 days";
 }
