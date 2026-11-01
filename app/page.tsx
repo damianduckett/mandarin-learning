@@ -143,7 +143,9 @@ export default function Home() {
  function answer(id: number) {
   if (answeredRef.current || finishedRef.current) return;
   answeredRef.current = true;
-  setSelected(id); window.setTimeout(() => nextButtonRef.current?.focus(), 0); const p = session[index]; const correct = id === p.id;
+  const p = session[index];
+  if (!p) { answeredRef.current = false; return; }
+  setSelected(id); window.setTimeout(() => nextButtonRef.current?.focus(), 0); const correct = id === p.id;
   const recalled = correct && !revealed;
   if (recalled) setScore(s => s + 1);
   if (recalled) setMasteryEarned(s => s + (answerMode === "write" ? 2 : 1));
