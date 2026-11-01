@@ -66,6 +66,7 @@ test('old progress needs no migration to start tracking lesson practice', () => 
 });
 
 const { recordRecall, recommendedMode, isComplete, masteryPercent } = load('lib/phrase-mastery.ts');
+const { reviewCard } = load('lib/spaced-repetition.ts');
 test('recognition unlocks typing, typed recall completes, further practice earns points', () => {
   let value;
   assert.equal(recommendedMode(value), 'choice');
@@ -90,4 +91,11 @@ test('mistakes, hints and repeated choices cannot falsely complete a phrase', ()
   assert.equal(isComplete(value),false);
   assert.equal(masteryPercent(value),50);
   assert.equal(value.attempts,32);
+});
+test('legacy progress cards are safely upgraded before the next answer', () => {
+  const legacy = { phraseId: 1, stage: 2, dueAt: '2026-10-30T12:00:00.000Z', lastReviewedAt: '2026-10-30T12:00:00.000Z', correctStreak: 2, lapses: 0 };
+  const upgraded = reviewCard(legacy, 1, true, new Date('2026-11-01T12:00:00.000Z'));
+  assert.equal(upgraded.phraseId, 1);
+  assert.equal(Number.isFinite(upgraded.stability), true);
+  assert.equal(Number.isFinite(upgraded.difficulty), true);
 });
