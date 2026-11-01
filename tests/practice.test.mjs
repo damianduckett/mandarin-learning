@@ -65,8 +65,29 @@ test('old progress needs no migration to start tracking lesson practice', () => 
   assert.deepEqual(completeLesson(undefined, 4), { completions: 1, masteryPoints: 4, bestScore: 4 });
 });
 
-test('history reconstruction validates grades before calling the scheduler', () => {
-  const { reconstructCard } = load('lib/fsrs-reconstruction.ts');
-  assert.throws(() => reconstructCard([{ reviewedAt: '2026-10-30T12:00:00Z', rating: 0 }]), /invalid rating/);
-  assert.equal(reconstructCard([{ reviewedAt: '2026-10-30T12:00:00Z', rating: 3 }]).reps, 1);
+const { recordRecall, recommendedMode, isComplete, masteryPercent } = load('lib/phrase-mastery.ts');
+test('recognition unlocks typing, typed recall completes, further practice earns points', () => {
+  let value;
+  assert.equal(recommendedMode(value), 'choice');
+  for(let i=0;i<3;i++) value=recordRecall(value,'choice',true,false);
+  assert.equal(recommendedMode(value),'write');
+  assert.equal(isComplete(value),false);
+  assert.equal(masteryPercent(value),50);
+  for(let i=0;i<3;i++) value=recordRecall(value,'write',true,false);
+  assert.equal(isComplete(value),true);
+  assert.equal(masteryPercent(value),100);
+  assert.equal(value.points,9);
+  value=recordRecall(JSON.parse(JSON.stringify(value)),'write',true,false);
+  assert.equal(value.points,11);
+  assert.equal(isComplete(value),true);
+});
+test('mistakes, hints and repeated choices cannot falsely complete a phrase', () => {
+  let value=recordRecall(undefined,'choice',false,false);
+  value=recordRecall(value,'write',true,true);
+  assert.equal(value.points,0);
+  assert.equal(masteryPercent(value),0);
+  for(let i=0;i<30;i++) value=recordRecall(value,'choice',true,false);
+  assert.equal(isComplete(value),false);
+  assert.equal(masteryPercent(value),50);
+  assert.equal(value.attempts,32);
 });
